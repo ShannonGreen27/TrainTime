@@ -16,7 +16,12 @@ $(document).ready(function() {
 	var destination = "";
 	var trainTime = 0;
 	var frequency = 0;
-	var trainTimeConverted;
+	var trainTimeConverted = 0;
+	var currentTime = 0;
+	var diffTime = 0;
+	var remainder = 0;
+	var minutesAway = 0;
+	var nextTrain = 0;
 
 	$('#addTrainBtn').on('click', function() {
 
@@ -25,31 +30,11 @@ $(document).ready(function() {
 		trainTime = $('#trainTimeInput').val().trim();
 		frequency = $('#frequencyInput').val().trim();
 
-		trainTimeConverted = moment(trainTime,"hh:mm a").subtract(1, "years");
-
-		// Current Time
-		var currentTime = moment().format('hh:mm a');
-		console.log(currentTime)
-
-		// Difference between the times
-		var diffTime = currentTime.diff(trainTimeConverted, "minutes");
-		console.log(diffTime)
-
-		// Time apart (remainder)
-		var remainder = diffTime % frequency;
-		console.log(remainder)
-		// Minute Until Train
-		var minutesAway = frequency - remainder;
-
-		// Next Train
-		var nextTrain = moment().add(minutesAway, "minutes")
-
-
 		database.ref().push({
 
 			trainName: trainName,
 			destination: destination,
-			trainTime: trainTimeConverted,
+			trainTime: trainTime,
 			frequency: frequency
 
 		})
@@ -61,19 +46,36 @@ $(document).ready(function() {
 
 		trainName = snapshot.val().trainName
 		destination = snapshot.val().destination
-		trainTime = snapshot.val().trainTimeConverted
+		trainTime = snapshot.val().trainTime
 		frequency = snapshot.val().frequency
+
+		currentTime = moment();
+
+		trainTimeConverted = moment(trainTime,"hh:mm a").subtract(1, "years");
+
+		// Difference between the times
+		diffTime = currentTime.diff(trainTimeConverted, "minutes");
+
+		// Time apart (remainder)
+		remainder = diffTime % frequency;
+
+		// Minute Until Train
+		minutesAway = frequency - remainder;
+
+		// Next Train
+		nextTrain = moment().add(minutesAway, "minutes")
+
+		nextTrain = nextTrain.format('hh:mm a')
 
 		$('tbody').append(
 
 			"<tr><td>"+trainName+
 			"</td><td>"+destination+
 			"</td><td>"+frequency+
-			"</td><td>"+trainTimeConverted+"</td></tr>");
+			"</td><td>"+nextTrain+
+			"</td><td>"+minutesAway+"</td></tr>");
+
 
 	})
- 
-
-
 
 })
